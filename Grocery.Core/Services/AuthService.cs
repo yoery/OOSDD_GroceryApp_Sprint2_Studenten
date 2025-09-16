@@ -11,11 +11,21 @@ namespace Grocery.Core.Services
         {
             _clientService = clientService;
         }
+
         public Client? Login(string email, string password)
         {
-            //Vraag de klantgegevens [Client] op die je zoekt met het opgegeven emailadres
-            //Als je een klant gevonden hebt controleer dan of het password matcht --> PasswordHelper.VerifyPassword(password, passwordFromClient)
-            //Als alles klopt dan klantgegveens teruggeven, anders null
+            var client = _clientService.Get(email);
+            if (client == null) return null;
+
+            // Simpel wachtwoord ophalen
+            var wachtwoord = typeof(Client)
+                .GetProperty("_password", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
+                ?.GetValue(client) as string;
+
+            // Simpel vergelijken
+            if (wachtwoord != null && PasswordHelper.VerifyPassword(password, wachtwoord))
+                return client;
+
             return null;
         }
     }
